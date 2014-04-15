@@ -1,15 +1,10 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-author = "Rasmus Kaj <kaj@stacken.kth.se>"
-license = author + """ wrote this program.
-As long as you retain this notice you can do whatever you want with this
-stuff.  If we meet some day, and you think this stuff is worth it, you
-can buy me a beer in return."""
-version = '0.1+'
-progurl = 'http://rasmus.krats.se/2008/chordlab/'
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+
+from chordlib import consts
 
 class CanvasAdapter(canvas.Canvas) :
     "My convenience adapter for the reportlab canvas."
@@ -24,7 +19,7 @@ class CanvasAdapter(canvas.Canvas) :
         self._doc.setAuthor(author or self._guess_author())
         
         # reportlab doesn't provide a nicer interface to this (yet)
-        self._doc.info.producer = 'Chordlab ' + version + '\n' + progurl
+        self._doc.info.producer = 'Chordlab ' + consts.version + '\n' + consts.progurl
         
         self.pagesize = pagesize
         self.margin = margin
@@ -89,76 +84,6 @@ class CanvasAdapter(canvas.Canvas) :
     def get_bottom(self) :
         "Get top end of drawable area"
         return self.bottom
-
-def getUnitFactor(name, default=1):
-    from reportlab.lib.units import toLength
-    if name:
-        return toLength('1' + name);
-    else:
-        return default
-
-def getPageSize(descr):
-    import reportlab.lib.pagesizes
-    if descr.upper() in dir(reportlab.lib.pagesizes):
-        return reportlab.lib.pagesizes.__getattribute__(descr.upper())
-    else:
-        import re
-        unit = '(cm|in|pt|i|mm|pica)';
-        pformat = re.compile("^(\d+) ?"+unit+"? ?(x|by)(\d+) ?"+unit+"?$")
-        m = pformat.match(descr)
-        if m:
-            yunit = getUnitFactor(m.group(5))
-            xunit = getUnitFactor(m.group(2), default=yunit)
-            return (float(m.group(1))*xunit, float(m.group(4))*yunit)
-        else:
-            return None;
-
-from copy import copy
-from optparse import Option, OptionValueError
-
-def check_pagesize(option, opt, value):
-    result = getPageSize(value)
-    if result != None:
-        return result
-    else:
-        raise OptionValueError("option %s: invalid page size: %r"
-                               % (opt, value))
-
-class MyOption(Option):
-    """Option class with common option support and an added pagesize type"""
-    TYPES = Option.TYPES + ("pagesize",)
-    TYPE_CHECKER = copy(Option.TYPE_CHECKER)
-    TYPE_CHECKER["pagesize"] = check_pagesize
-    
-from optparse import OptionParser
-
-description = """Takes a set of chopro files and converts them to a single
-pdf file.  If no file names are given as arguments, a single chopro files
-is read from stdin.  Chopro files is simply text files with chord names in
-brackets and some other options in braces, on separate lines."""
-
-opt = OptionParser(usage="usage: %prog [options] file.chopro ...",
-                   version="%prog " + version + " by " + author,
-                   description=description,
-                   epilog=license + '\n\n' + progurl,
-                   option_class=MyOption)
-opt.add_option("-o", "--output", dest="output", default="chords.pdf",
-               help="output file to write [default: %default]", metavar="FILE")
-opt.add_option("-p", "--pagesize", dest="pagesize", type="pagesize",
-               default="A4", metavar="SZ",
-               help="output page size, name or dimensions [default: %default]")
-opt.add_option("--title", dest="doctitle", metavar="TITLE",
-               help="document title to put in PDF metadata")
-opt.add_option("--author", dest="docauthor", metavar="AUTHOR",
-               help="author name/address to put in PDF metadata")
-opt.add_option("--showfilenames",
-               action="store_true", dest="showfiles", default=False,
-               help="Show source filenames in output")
-opt.add_option("--no-compact",
-               action="store_true", dest="disable_compact", default=False,
-               help="Make place for chords even on lines w/o chords")
-
-(options, sourcefiles) = opt.parse_args()
 
 usedchords = set()
 
@@ -378,7 +303,13 @@ def newSong(c) :
     colw = c.get_right() # Any large number, really
     return (x, y)
 
+
 # -- main --
+
+from chordlib.script import make_option_parser
+opt = make_option_parser()
+(options, sourcefiles) = opt.parse_args()
+
 c = CanvasAdapter(options.output, showfilenames=options.showfiles,
                   pagesize=options.pagesize,
                   title=options.doctitle, author=options.docauthor)
