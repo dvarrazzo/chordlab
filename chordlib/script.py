@@ -7,12 +7,45 @@ This file is part of chordlab.
 from copy import copy
 from optparse import Option, OptionValueError, OptionParser
 
+from . import guitar
 from . import consts
+from .canvas import CanvasAdapter
+from .pdf import PdfSongsRenderer
+from .chopro import ChoProParser
 
-description = """Takes a set of chopro files and converts them to a single
-pdf file.  If no file names are given as arguments, a single chopro files
-is read from stdin.  Chopro files is simply text files with chord names in
-brackets and some other options in braces, on separate lines."""
+import logging
+logger = logging.getLogger('chordlib.script')
+
+def main():
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(levelname)s %(message)s')
+
+    opt = make_option_parser()
+    (options, sourcefiles) = opt.parse_args()
+
+    # TODO: per-renderer config
+    c = CanvasAdapter(options.output, showfilenames=options.showfiles,
+                      pagesize=options.pagesize,
+                      title=options.doctitle, author=options.docauthor)
+    r = PdfSongsRenderer(c)
+    r.disable_compact = options.disable_compact
+
+    # TODO: ukulele!
+    r.knownchords = guitar.knownchords
+
+    p = ChoProParser(default_encoding='latin1') # bad choice
+    for fn in sourcefiles:
+        r.new_song(fn)
+        try:
+            for token in p.parse_file(fn):
+                r.handle_token(token)
+        except p.ParseError, e:
+            logger.error("error parsing file '%s': %s", fn, e)
+            return 1
+
+    r.draw_chord_boxes()
+    r.end_of_input()
 
 
 def get_unit_factor(name, default=1):
@@ -51,6 +84,12 @@ class MyOption(Option):
     TYPES = Option.TYPES + ("pagesize",)
     TYPE_CHECKER = copy(Option.TYPE_CHECKER)
     TYPE_CHECKER["pagesize"] = check_page_size
+
+
+description = """Takes a set of chopro files and converts them to a single
+pdf file.  If no file names are given as arguments, a single chopro files
+is read from stdin.  Chopro files is simply text files with chord names in
+brackets and some other options in braces, on separate lines."""
 
 def make_option_parser():
     opt = OptionParser(usage="usage: %prog [options] file.chopro ...",
