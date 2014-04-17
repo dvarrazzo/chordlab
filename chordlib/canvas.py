@@ -38,7 +38,7 @@ class CanvasAdapter(canvas.Canvas) :
         try:
             import pwd, socket, os
             pw = pwd.getpwuid(os.getuid())
-            realname = pw.pw_gecos.split(',')[0];
+            realname = pw.pw_gecos.split(',')[0]
             mailaddr = os.environ.get('MAILADDR')
             if not mailaddr:
                 logname = os.environ.get('LOGNAME') or pw.pw_name

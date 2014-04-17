@@ -50,11 +50,11 @@ class PdfSongsRenderer(SongsRenderer):
                 xpos = self.canvas.get_right() - boxw + 10
                 ypos += 55
         self.usedchords = set()
-        
+
     def draw_chord_box(self, xpos, ypos, chord):
         dx = 5
         dy = 7
-        
+
         self.canvas.saveState()
         clip = self.canvas.beginPath()
         clip.moveTo(xpos - dx,   ypos - dy/2)
@@ -63,16 +63,16 @@ class PdfSongsRenderer(SongsRenderer):
         clip.lineTo(xpos - dx,   ypos + 4*dy + 1)
         clip.close()
         self.canvas.clipPath(clip, stroke=0)            # clipPath
-        
+
         self.canvas.setLineWidth(0.3)
         self.canvas.grid([xpos + dx*x for x in range(6)], [ypos + dy*y for y in range(-1, 6)])
         self.canvas.restoreState()
 
         self.canvas.setFont("Helvetica-Oblique", 10)
         self.canvas.drawCentredString(xpos + dx*2.5, ypos + 5.1*dy, chord)
-        
+
         the_chord = self.localchords.get(chord) or self.knownchords.get(chord)
-        
+
         if the_chord != None:
             self.canvas.setFont("Helvetica", 7)
             if the_chord[0] > 1: # bare
@@ -80,7 +80,7 @@ class PdfSongsRenderer(SongsRenderer):
             else:
                 self.canvas.setLineWidth(1)
                 self.canvas.line(xpos, ypos+4*dy+0.5, xpos + 5*dx, ypos+4*dy+0.5)
-            x = xpos;
+            x = xpos
             for string in the_chord[1:]:
                 if string == None:
                     self.canvas.drawCentredString(x, ypos + 4*dy + 1.7, 'x')
@@ -88,7 +88,7 @@ class PdfSongsRenderer(SongsRenderer):
                     self.canvas.drawCentredString(x, ypos + 4*dy + 1.7, 'o')
                 else:
                     self.canvas.circle(x, ypos + (4.5-string)*dy, 2.0*dx/5, stroke=0, fill=1)
-            
+
                 x += dx
 
     def end_of_input(self):
@@ -191,5 +191,5 @@ class PdfSongsRenderer(SongsRenderer):
             if ischord :
                 okpos = to.getCursor()[0] + 3
                 to.setTextOrigin(csp[0], csp[1])
-            ischord = not(ischord);
+            ischord = not ischord
         self.canvas.drawText(to)

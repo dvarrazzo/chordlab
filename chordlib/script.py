@@ -51,7 +51,7 @@ def main():
 def get_unit_factor(name, default=1):
     from reportlab.lib.units import toLength
     if name:
-        return toLength('1' + name);
+        return toLength('1' + name)
     else:
         return default
 
@@ -61,7 +61,7 @@ def get_page_size(descr):
         return reportlab.lib.pagesizes.__getattribute__(descr.upper())
     else:
         import re
-        unit = '(cm|in|pt|i|mm|pica)';
+        unit = '(cm|in|pt|i|mm|pica)'
         pformat = re.compile("^(\d+) ?"+unit+"? ?(x|by)(\d+) ?"+unit+"?$")
         m = pformat.match(descr)
         if m:
@@ -69,7 +69,7 @@ def get_page_size(descr):
             xunit = get_unit_factor(m.group(2), default=yunit)
             return (float(m.group(1))*xunit, float(m.group(4))*yunit)
         else:
-            return None;
+            return None
 
 def check_page_size(option, opt, value):
     result = get_page_size(value)
