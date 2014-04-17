@@ -133,14 +133,14 @@ class ChoProParser(object):
 
                 if cls is StartOfTab:
                     if not tabmode:
-                        self.tabmode = True
+                        tabmode = True
                     else:
                         logger.warn("Ignoring unmatched start_of_tab")
                         continue
 
                 elif cls is EndOfTab:
                     if tabmode:
-                        self.tabmode = False
+                        tabmode = False
                     else:
                         logger.warn("Ignoring unmatched end_of_tab")
                         continue
