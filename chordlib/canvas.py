@@ -88,4 +88,17 @@ class CanvasAdapter(canvas.Canvas) :
         "Get top end of drawable area"
         return self.bottom
 
+    def draw_aligned_string(self, align, ypos, text):
+        if align == 'left':
+            meth = self.drawString
+            xpos = self.get_left()
+        elif align == 'right':
+            meth = self.drawRightString
+            xpos = self.get_right()
+        elif align == 'center':
+            meth = self.drawCentredString
+            xpos = (self.get_left() + self.get_right()) / 2
+        else:
+            raise ValueError('bad align: %s' % align)
 
+        meth(xpos, ypos, text)

@@ -8,11 +8,12 @@ import sys
 from copy import copy
 from optparse import Option, OptionValueError, OptionParser
 
-from . import guitar
 from . import consts
+from . import guitar
 from .canvas import CanvasAdapter
-from .pdf import PdfSongsRenderer
 from .chopro import ChoProParser
+from .error import ChordLibError
+from .pdf import PdfSongsRenderer
 
 import logging
 logger = logging.getLogger('chordlib.script')
@@ -47,6 +48,8 @@ def main():
                       pagesize=options.pagesize,
                       title=options.doctitle, author=options.docauthor)
     r = PdfSongsRenderer(c)
+    if options.styles:
+        r.style.read(*options.styles)
     r.disable_compact = options.disable_compact
 
     # TODO: ukulele!
@@ -120,6 +123,8 @@ def make_option_parser():
     opt.add_option("-p", "--pagesize", dest="pagesize", type="pagesize",
                    default="A4", metavar="SZ",
                    help="output page size, name or dimensions [default: %default]")
+    opt.add_option("--style", dest="styles", action="append",
+                   help="use this style sheet (can be used more than once)")
     opt.add_option("--title", dest="doctitle", metavar="TITLE",
                    help="document title to put in PDF metadata")
     opt.add_option("--author", dest="docauthor", metavar="AUTHOR",

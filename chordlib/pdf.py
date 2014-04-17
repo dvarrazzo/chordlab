@@ -4,7 +4,8 @@ Rendering of songs in pdf
 This file is part of chordlab.
 """
 
-from chordlib.render import SongsRenderer
+from .render import SongsRenderer
+from . import style
 
 class PdfSongsRenderer(SongsRenderer):
     def __init__(self, canvas):
@@ -12,6 +13,7 @@ class PdfSongsRenderer(SongsRenderer):
 
         # config
         self.disable_compact = False
+        self.style = style.get_base_stylesheet()
 
         self.canvas = canvas
         self.xpos = self.ypos = self.colw = None
@@ -32,9 +34,7 @@ class PdfSongsRenderer(SongsRenderer):
         self.xpos += self.colw
         if (self.xpos + 1 > self.canvas.get_right()):
             self.xpos, self.ypos = self.canvas.newPage(self.filename)
-        if self.tabmode:
-            self.canvas.setFont("Courier", 9);
-        
+
     def draw_chord_boxes(self) :
         if self.skip_grid:
             self.skip_grid = False
@@ -44,7 +44,7 @@ class PdfSongsRenderer(SongsRenderer):
         xpos = self.canvas.get_right() - boxw + 10
         ypos = self.canvas.get_bottom() + 8
         for chord in reversed(sorted(self.usedchords)):
-            self.draw_chord_box(xpos, ypos, chord);
+            self.draw_chord_box(xpos, ypos, chord)
             xpos -= boxw
             if xpos < self.canvas.get_left():
                 xpos = self.canvas.get_right() - boxw + 10
@@ -96,36 +96,40 @@ class PdfSongsRenderer(SongsRenderer):
         self.canvas.showPage()
         self.canvas.save()
 
+
     def handle_Title(self, token):
-        self.canvas.setFont("Times-Bold", 14)
-        self.ypos -= 18
-        self.canvas.drawCentredString(
-            (self.canvas.get_left() + self.canvas.get_right()) / 2,
-            self.ypos, token.arg)
-            
+        self._draw_title('title', token.arg)
+
     def handle_SubTitle(self, token):
-        self.canvas.setFont("Times-Roman", 12)
-        self.ypos -= 14
-        self.canvas.drawCentredString(
-            (self.canvas.get_left() + self.canvas.get_right()) / 2,
-            self.ypos, token.arg)
-            
+        self._draw_title('subtitle', token.arg)
+
+    def _draw_title(self, style_name, text):
+        style = self.style[style_name]
+        self.canvas.setFont(style.font, style.size)
+        self.canvas.setFillColor(style.color)
+        self.ypos -= style.line_height
+        self.canvas.draw_aligned_string(style.align, self.ypos, text)
+
     def handle_Comment(self, token):
-        self.canvas.setFont("Times-Italic", 10)
-        self.ypos -= 12
+        style = self.style['comment']
+        self.canvas.setFont(style.font, style.size)
+        self.canvas.setFillColor(style.color)
+        self.ypos -= style.line_height
         self.canvas.drawString(self.xpos, self.ypos, token.arg)
 
     def handle_StartOfChorus(self, token):
         self.socpos = [self.xpos-5, self.ypos]
-        self.xpos += 10
+        self.xpos += self.style['chorus'].indent
 
     def handle_EndOfChorus(self, token):
-        self.xpos -= 10
+        self.xpos -= self.style['chorus'].indent
+        # TODO: box etc.
         self.canvas.line(self.socpos[0], self.socpos[1],
                          self.xpos-5, self.ypos-5)
 
     def handle_StartOfTab(self, token):
-        self.canvas.setFont("Courier", 9);
+        style = self.style['tab']
+        self.canvas.setFont(style.font, style.size)
         self.tabmode = True
 
     def handle_EndOfTab(self, token):
@@ -153,23 +157,33 @@ class PdfSongsRenderer(SongsRenderer):
         self.skip_grid = True
 
     def handle_Blank(self, token):
-        self.ypos -= 16
+        style = self.style['blank']
+        self.ypos -= style.line_height
 
     def handle_TabLine(self, token):
-        if self.ypos < self.canvas.get_bottom() + 12:
+        style = self.style['tab']
+        self.canvas.setFont(style.font, style.size)
+        self.canvas.setFillColor(style.color)
+        h = style.line_height
+        if self.ypos < self.canvas.get_bottom() + (h * 1.33):
             self.column_break()
-        self.ypos -= 9
+        self.ypos -= h
         self.canvas.drawString(self.xpos, self.ypos, token.arg)
 
     def handle_Line(self, token):
-        if self.ypos < self.canvas.get_bottom() + 24:
+        sl = self.style['line']
+        sc = self.style['chord']
+
+        if self.ypos < self.canvas.get_bottom() \
+                + (sl.line_height + sc.line_height) * 1.1:
             self.column_break()
+
         parts = token.arg
         if self.disable_compact or len(parts) > 1:
-            self.ypos -= 22
+            self.ypos -= sl.line_height + sc.line_height
         else:
-            self.ypos -= 12
-        
+            self.ypos -= sl.line_height
+
         to = self.canvas.beginText(self.xpos, self.ypos)
         ischord = 0
         okpos = 0
@@ -180,13 +194,13 @@ class PdfSongsRenderer(SongsRenderer):
                 while csp[0] < okpos :
                     to.textOut(u'\u00B7')
                     csp = to.getCursor()
-                to.setFont("Helvetica-Oblique", 9)
-                to.setRise(11)
-                to.setFillGray(0.5)
+                to.setFont(sc.font, sc.size)
+                to.setRise(sc.rise)
+                to.setFillColor(sc.color)
             else:
-                to.setFont("Times-Roman", 12)
+                to.setFont(sl.font, sl.size)
                 to.setRise(0)
-                to.setFillGray(0)
+                to.setFillColor(sl.color)
             to.textOut(x)
             if ischord :
                 okpos = to.getCursor()[0] + 3
