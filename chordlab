@@ -1,8 +1,11 @@
 #! /usr/bin/env python
+"""
+Script entry point.
 
-import sys
-from chordlib.script import main
+This file is part of chordlab.
+"""
+
+from chordlib.script import script
 
 if __name__ == '__main__':
-    sys.exit(main())
-
+    script()

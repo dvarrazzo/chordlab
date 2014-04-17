@@ -4,6 +4,7 @@ Main script and command line parsing.
 This file is part of chordlab.
 """
 
+import sys
 from copy import copy
 from optparse import Option, OptionValueError, OptionParser
 
@@ -16,11 +17,28 @@ from .chopro import ChoProParser
 import logging
 logger = logging.getLogger('chordlib.script')
 
-def main():
+def script():
     logging.basicConfig(
         level=logging.INFO,
         format='%(levelname)s %(message)s')
 
+    try:
+        sys.exit(main())
+
+    except ChordLibError, e:
+        logger.error("%s", e)
+        sys.exit(1)
+
+    except Exception:
+        logger.exception("unexpected error")
+        sys.exit(1)
+
+    except KeyboardInterrupt:
+        logger.info("user interrupt")
+        sys.exit(1)
+
+
+def main():
     opt = make_option_parser()
     (options, sourcefiles) = opt.parse_args()
 
