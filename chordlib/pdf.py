@@ -207,25 +207,47 @@ class PdfSongsRenderer(SongsRenderer):
             self.ypos -= sl.line_height
 
         to = self.canvas.beginText(self.xpos, self.ypos)
+
+        for txt in parts[::2]:
+            if txt and not txt.isspace():
+                only_chords = False
+                break
+        else:
+            only_chords = True
+
         ischord = 0
-        okpos = 0
-        for x in parts:
-            if ischord :
-                self.use_chord(x)
-                csp = to.getCursor()
-                while csp[0] < okpos :
-                    to.textOut(u'\u00B7')
+        if not only_chords:
+            okpos = 0
+            for x in parts:
+                if ischord :
+                    self.use_chord(x)
                     csp = to.getCursor()
-                to.setFont(sc.font, sc.size)
-                to.setRise(sc.rise)
-                to.setFillColor(sc.color)
-            else:
-                to.setFont(sl.font, sl.size)
-                to.setRise(0)
-                to.setFillColor(sl.color)
-            to.textOut(x)
-            if ischord :
-                okpos = to.getCursor()[0] + 3
-                to.setTextOrigin(csp[0], csp[1])
-            ischord = not ischord
+                    while csp[0] < okpos :
+                        to.textOut(u'\u00B7')
+                        csp = to.getCursor()
+                    to.setFont(sc.font, sc.size)
+                    to.setRise(sc.rise)
+                    to.setFillColor(sc.color)
+                else:
+                    to.setFont(sl.font, sl.size)
+                    to.setRise(0)
+                    to.setFillColor(sl.color)
+                to.textOut(x)
+                if ischord :
+                    okpos = to.getCursor()[0] + 3
+                    to.setTextOrigin(csp[0], csp[1])
+                ischord = not ischord
+
+        else:
+            for x in parts:
+                if ischord :
+                    self.use_chord(x)
+                    to.setFont(sc.font, sl.size)
+                    to.setFillColor(sc.color)
+                else:
+                    to.setFont(sl.font, sl.size)
+                    to.setFillColor(sl.color)
+                to.textOut(x)
+                ischord = not ischord
+
         self.canvas.drawText(to)
