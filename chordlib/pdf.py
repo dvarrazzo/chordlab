@@ -43,53 +43,71 @@ class PdfSongsRenderer(SongsRenderer):
         boxw = 38
         xpos = self.canvas.get_right() - boxw + 10
         ypos = self.canvas.get_bottom() + 8
-        for chord in reversed(sorted(self.usedchords)):
-            self.draw_chord_box(xpos, ypos, chord)
+        for cname in reversed(sorted(self.usedchords)):
+            chord = self.localchords.get(cname) or self.knownchords.get(cname)
+            if not chord:
+                continue
+            self.draw_chord_box(xpos, ypos, cname, chord)
             xpos -= boxw
             if xpos < self.canvas.get_left():
                 xpos = self.canvas.get_right() - boxw + 10
                 ypos += 55
         self.usedchords = set()
 
-    def draw_chord_box(self, xpos, ypos, chord):
-        dx = 5
+    def draw_chord_box(self, xpos, ypos, cname, chord):
+        nstrings = len(chord) - 1
+        dx = 5 * 6 / nstrings
         dy = 7
 
         self.canvas.saveState()
         clip = self.canvas.beginPath()
         clip.moveTo(xpos - dx,   ypos - dy/2)
-        clip.lineTo(xpos + 6*dx, ypos - dy/2)
-        clip.lineTo(xpos + 6*dx, ypos + 4*dy + 1)
+        clip.lineTo(xpos + nstrings*dx, ypos - dy/2)
+        clip.lineTo(xpos + nstrings*dx, ypos + 4*dy + 1)
         clip.lineTo(xpos - dx,   ypos + 4*dy + 1)
         clip.close()
         self.canvas.clipPath(clip, stroke=0)            # clipPath
 
         self.canvas.setLineWidth(0.3)
-        self.canvas.grid([xpos + dx*x for x in range(6)], [ypos + dy*y for y in range(-1, 6)])
+        self.canvas.grid(
+            [xpos + dx*x for x in range(nstrings)],
+            [ypos + dy*y for y in range(-1, 6)])
         self.canvas.restoreState()
 
         self.canvas.setFont("Helvetica-Oblique", 10)
-        self.canvas.drawCentredString(xpos + dx*2.5, ypos + 5.1*dy, chord)
+        self.canvas.drawCentredString(
+            xpos + dx * 0.5 * (nstrings - 1), ypos + 5.1 * dy, cname)
 
-        the_chord = self.localchords.get(chord) or self.knownchords.get(chord)
+        self.canvas.setFont("Helvetica", 7)
+        if chord[0] > 1: # bare
+            self.canvas.drawRightString(
+                xpos - 2.0 * dx / 5, ypos + 3 * dy + 1, str(chord[0]))
+        else:
+            self.canvas.setLineWidth(1)
+            self.canvas.line(
+                xpos, ypos + 4 * dy + 0.5,
+                xpos + (nstrings - 1) * dx, ypos + 4 * dy + 0.5)
+        x = xpos
 
-        if the_chord != None:
-            self.canvas.setFont("Helvetica", 7)
-            if the_chord[0] > 1: # bare
-                self.canvas.drawRightString(xpos-2.0*dx/5, ypos + 3*dy+1, str(the_chord[0]))
+        self.canvas.setLineWidth(0.5)
+        for string in chord[1:]:
+            if string == None:
+                self.canvas.line(
+                    x - 1.8, ypos + 4.5 * dy - 1.8,
+                    x + 1.8, ypos + 4.5 * dy + 1.8)
+                self.canvas.line(
+                    x + 1.8, ypos + 4.5 * dy - 1.8,
+                    x - 1.8, ypos + 4.5 * dy + 1.8)
+            elif string == 0:
+                self.canvas.circle(
+                    x, ypos + (4.5 - string) * dy, 1.8,
+                    stroke=1, fill=0)
             else:
-                self.canvas.setLineWidth(1)
-                self.canvas.line(xpos, ypos+4*dy+0.5, xpos + 5*dx, ypos+4*dy+0.5)
-            x = xpos
-            for string in the_chord[1:]:
-                if string == None:
-                    self.canvas.drawCentredString(x, ypos + 4*dy + 1.7, 'x')
-                elif string == 0:
-                    self.canvas.drawCentredString(x, ypos + 4*dy + 1.7, 'o')
-                else:
-                    self.canvas.circle(x, ypos + (4.5-string)*dy, 2.0*dx/5, stroke=0, fill=1)
+                self.canvas.circle(
+                    x, ypos + (4.5 - string) * dy, 2,
+                    stroke=0, fill=1)
 
-                x += dx
+            x += dx
 
     def end_of_input(self):
         super(PdfSongsRenderer, self).end_of_input()

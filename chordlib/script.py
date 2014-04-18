@@ -9,7 +9,6 @@ from copy import copy
 from optparse import Option, OptionValueError, OptionParser
 
 from . import consts
-from . import guitar
 from .canvas import CanvasAdapter
 from .chopro import ChoProParser
 from .error import ChordLibError
@@ -52,8 +51,12 @@ def main():
         r.style.read(*options.styles)
     r.disable_compact = options.disable_compact
 
-    # TODO: ukulele!
-    r.knownchords = guitar.knownchords
+    if options.ukulele:
+        from .ukulele import knownchords
+    else:
+        from .guitar import knownchords
+
+    r.knownchords = knownchords
 
     p = ChoProParser(default_encoding='latin1') # bad choice
     for fn in sourcefiles:
@@ -120,6 +123,8 @@ def make_option_parser():
                        option_class=MyOption)
     opt.add_option("-o", "--output", dest="output", default="chords.pdf",
                    help="output file to write [default: %default]", metavar="FILE")
+    opt.add_option("--ukulele", action="store_true",
+                   help="print ukulele chords instead of guitar")
     opt.add_option("-p", "--pagesize", dest="pagesize", type="pagesize",
                    default="A4", metavar="SZ",
                    help="output page size, name or dimensions [default: %default]")
