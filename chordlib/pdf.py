@@ -218,12 +218,20 @@ class PdfSongsRenderer(SongsRenderer):
         ischord = 0
         if not only_chords:
             okpos = 0
-            for x in parts:
+            for i, x in enumerate(parts):
                 if ischord :
                     self.use_chord(x)
+
+                    # fill with dots but only in the middle of a word
                     csp = to.getCursor()
-                    while csp[0] < okpos :
-                        to.textOut(u'\u00B7')
+                    if i + 1 < len(parts) \
+                            and (not parts[i+1] or parts[i+1].isspace()):
+                        cfill = ' '
+                    else:
+                        cfill = u'\u00B7'
+
+                    while csp[0] < okpos:
+                        to.textOut(cfill)
                         csp = to.getCursor()
                     to.setFont(sc.font, sc.size)
                     to.setRise(sc.rise)
