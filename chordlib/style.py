@@ -96,3 +96,11 @@ class Style(object):
             return self.CENTER
         else:
             raise ValueError('bad align: %s' % align)
+
+    @property
+    def scale(self):
+        scale = self.config.get(self.item, 'scale')
+        if '%' in scale:
+            return float(scale.replace('%', '')) * 0.01
+        else:
+            return float(scale)

@@ -40,9 +40,12 @@ class PdfSongsRenderer(SongsRenderer):
             self.skip_grid = False
             return
 
+        style = self.style['chordbox']
+        self.canvas.saveState()
         boxw = 38
-        xpos = self.canvas.get_right() - boxw + 10
-        ypos = self.canvas.get_bottom() + 8
+        xpos = (self.canvas.get_right()) / style.scale - boxw + 10
+        ypos = (self.canvas.get_bottom()) / style.scale + 8
+        self.canvas.scale(style.scale, style.scale)
         for cname in reversed(sorted(self.usedchords)):
             chord = self.localchords.get(cname) or self.knownchords.get(cname)
             if not chord:
@@ -53,6 +56,7 @@ class PdfSongsRenderer(SongsRenderer):
                 xpos = self.canvas.get_right() - boxw + 10
                 ypos += 55
         self.usedchords = set()
+        self.canvas.restoreState()
 
     def draw_chord_box(self, xpos, ypos, cname, chord):
         nstrings = len(chord) - 1
