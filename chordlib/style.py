@@ -11,6 +11,7 @@ from cStringIO import StringIO
 
 from reportlab.lib import colors
 from reportlab.lib.colors import Color
+from reportlab.lib.fonts import tt2ps
 
 from .error import ChordLibError
 
@@ -41,8 +42,23 @@ class Style(object):
         self.item = item
 
     @property
-    def font(self):
+    def ttfont(self):
         return self._parse('font')
+
+    @property
+    def font_weight(self):
+        return self._parse_choices('font-weight', ['normal', 'bold'])
+
+    @property
+    def font_style(self):
+        return self._parse_choices('font-style', ['normal', 'italic'])
+
+    @property
+    def font(self):
+        font = self.ttfont
+        bold = self.font_weight == 'bold'
+        italic = self.font_style == 'italic'
+        return tt2ps(font, bold, italic)
 
     @property
     def font_size(self):
