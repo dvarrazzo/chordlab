@@ -9,7 +9,7 @@ from reportlab.lib.pagesizes import A4
 
 from chordlib import consts
 
-class CanvasAdapter(canvas.Canvas) :
+class CanvasAdapter(canvas.Canvas):
     "My convenience adapter for the reportlab canvas."
 
     def __init__(self, filename, pagesize=A4, margin=50, showfilenames=False,
@@ -48,7 +48,7 @@ class CanvasAdapter(canvas.Canvas) :
             print "WARNING: Could not determine author name"
             return None
 
-    def newPage(self, filename) :
+    def newPage(self, filename):
         if self.pageno > 0: self.showPage()
         self.pageno += 1
         if self.duplex and (self.pageno % 2 == 1):
@@ -72,19 +72,19 @@ class CanvasAdapter(canvas.Canvas) :
 
         return (self.left, self.top)
 
-    def get_left(self) :
+    def get_left(self):
         "Get left start of drawable area"
         return self.left
 
-    def get_right(self) :
+    def get_right(self):
         "Get right end of drawable area"
         return self.right
 
-    def get_top(self) :
+    def get_top(self):
         "Get top start of drawable area"
         return self.top
 
-    def get_bottom(self) :
+    def get_bottom(self):
         "Get top end of drawable area"
         return self.bottom
 

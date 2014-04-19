@@ -35,7 +35,7 @@ class PdfSongsRenderer(SongsRenderer):
         if (self.xpos + 1 > self.canvas.get_right()):
             self.xpos, self.ypos = self.canvas.newPage(self.filename)
 
-    def draw_chord_boxes(self) :
+    def draw_chord_boxes(self):
         if self.skip_grid:
             self.skip_grid = False
             return
@@ -219,7 +219,7 @@ class PdfSongsRenderer(SongsRenderer):
         if not only_chords:
             okpos = 0
             for i, x in enumerate(parts):
-                if ischord :
+                if ischord:
                     self.use_chord(x)
 
                     # fill with dots but only in the middle of a word
@@ -241,14 +241,14 @@ class PdfSongsRenderer(SongsRenderer):
                     to.setRise(0)
                     to.setFillColor(sl.color)
                 to.textOut(x)
-                if ischord :
+                if ischord:
                     okpos = to.getCursor()[0] + 3
                     to.setTextOrigin(csp[0], csp[1])
                 ischord = not ischord
 
         else:
             for x in parts:
-                if ischord :
+                if ischord:
                     self.use_chord(x)
                     to.setFont(sc.font, sl.font_size)
                     to.setFillColor(sc.color)
