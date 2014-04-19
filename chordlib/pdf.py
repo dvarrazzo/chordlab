@@ -127,14 +127,14 @@ class PdfSongsRenderer(SongsRenderer):
 
     def _draw_title(self, style_name, text):
         style = self.style[style_name]
-        self.canvas.setFont(style.font, style.size)
+        self.canvas.setFont(style.font, style.font_size)
         self.canvas.setFillColor(style.color)
         self.ypos -= style.line_height
         self.canvas.draw_aligned_string(style.align, self.ypos, text)
 
     def handle_Comment(self, token):
         style = self.style['comment']
-        self.canvas.setFont(style.font, style.size)
+        self.canvas.setFont(style.font, style.font_size)
         self.canvas.setFillColor(style.color)
         self.ypos -= style.line_height
         self.canvas.drawString(self.xpos, self.ypos, token.arg)
@@ -151,7 +151,7 @@ class PdfSongsRenderer(SongsRenderer):
 
     def handle_StartOfTab(self, token):
         style = self.style['tab']
-        self.canvas.setFont(style.font, style.size)
+        self.canvas.setFont(style.font, style.font_size)
         self.tabmode = True
 
     def handle_EndOfTab(self, token):
@@ -184,7 +184,7 @@ class PdfSongsRenderer(SongsRenderer):
 
     def handle_TabLine(self, token):
         style = self.style['tab']
-        self.canvas.setFont(style.font, style.size)
+        self.canvas.setFont(style.font, style.font_size)
         self.canvas.setFillColor(style.color)
         h = style.line_height
         if self.ypos < self.canvas.get_bottom() + (h * 1.33):
@@ -233,11 +233,11 @@ class PdfSongsRenderer(SongsRenderer):
                     while csp[0] < okpos:
                         to.textOut(cfill)
                         csp = to.getCursor()
-                    to.setFont(sc.font, sc.size)
+                    to.setFont(sc.font, sc.font_size)
                     to.setRise(sc.rise)
                     to.setFillColor(sc.color)
                 else:
-                    to.setFont(sl.font, sl.size)
+                    to.setFont(sl.font, sl.font_size)
                     to.setRise(0)
                     to.setFillColor(sl.color)
                 to.textOut(x)
@@ -250,10 +250,10 @@ class PdfSongsRenderer(SongsRenderer):
             for x in parts:
                 if ischord :
                     self.use_chord(x)
-                    to.setFont(sc.font, sl.size)
+                    to.setFont(sc.font, sl.font_size)
                     to.setFillColor(sc.color)
                 else:
-                    to.setFont(sl.font, sl.size)
+                    to.setFont(sl.font, sl.font_size)
                     to.setFillColor(sl.color)
                 to.textOut(x)
                 ischord = not ischord

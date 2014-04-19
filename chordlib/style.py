@@ -45,8 +45,8 @@ class Style(object):
         return self.config.get(self.item, 'font')
 
     @property
-    def size(self):
-        return self.config.getint(self.item, 'size')
+    def font_size(self):
+        return self.config.getint(self.item, 'font-size')
 
     @property
     def line_height(self):
