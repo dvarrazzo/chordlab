@@ -35,6 +35,17 @@ class StyleSheet(object):
             raise ChordLibError("stylesheet not found: %s"
                 % ', '.join(sorted(set(files) - set(out))))
 
+sect_hierarchy = {
+    'title': 'songsheet',
+    'subtitle': 'songsheet',
+    'comment': 'songsheet',
+    'line': 'songsheet',
+    'chord': 'songsheet',
+    'tab': 'songsheet',
+    'chorus': 'songsheet',
+    'chordbox': 'songsheet',
+    'blank': 'songsheet',
+}
 
 class Style(object):
     def __init__(self, config, item):
@@ -95,10 +106,19 @@ class Style(object):
 
 
     def _parse(self, opt):
-        try:
-            return self.config.get(self.item, opt)
-        except ConfigParser.Error, e:
-            raise ChordLibError(str(e))
+        sect = self.item
+        while sect:
+            try:
+                return self.config.get(sect, opt)
+            except ConfigParser.NoOptionError:
+                # option not found: maybe specified in an ancestor?
+                sect = sect_hierarchy.get(sect)
+            except ConfigParser.Error, e:
+                raise ChordLibError(str(e))
+        else:
+            raise ChordLibError(
+                "no option '%s' in section '%s' or above"
+                % (opt, self.item))
 
     def _parse_int(self, opt):
         val = self._parse(opt)
