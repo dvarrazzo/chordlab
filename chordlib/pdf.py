@@ -201,12 +201,6 @@ class PdfSongsRenderer(SongsRenderer):
             self.column_break()
 
         parts = token.arg
-        if self.disable_compact or len(parts) > 1:
-            self.ypos -= sl.line_height + sc.line_height
-        else:
-            self.ypos -= sl.line_height
-
-        to = self.canvas.beginText(self.xpos, self.ypos)
 
         for txt in parts[::2]:
             if txt and not txt.isspace():
@@ -215,6 +209,12 @@ class PdfSongsRenderer(SongsRenderer):
         else:
             only_chords = True
 
+        if not only_chords and (self.disable_compact or len(parts) > 1):
+            self.ypos -= sl.line_height + sc.line_height
+        else:
+            self.ypos -= sl.line_height
+
+        to = self.canvas.beginText(self.xpos, self.ypos)
         ischord = 0
         if not only_chords:
             okpos = 0
