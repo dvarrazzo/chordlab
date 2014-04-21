@@ -4,6 +4,7 @@ Rendering of songs in pdf
 This file is part of chordlab.
 """
 
+from collections import OrderedDict
 from .render import SongsRenderer
 from . import style
 
@@ -19,7 +20,6 @@ class PdfSongsRenderer(SongsRenderer):
         self.xpos = self.ypos = self.colw = None
         self.tabmode = False
         self.skip_grid = False
-        self.usedchords = set()
         self.socpos = [0,0]
         self.colstart = 0
 
@@ -46,7 +46,7 @@ class PdfSongsRenderer(SongsRenderer):
         xpos = (self.canvas.get_right()) / style.scale - boxw + 10
         ypos = (self.canvas.get_bottom()) / style.scale + 8
         self.canvas.scale(style.scale, style.scale)
-        for cname in reversed(sorted(self.usedchords)):
+        for cname in reversed(self.usedchords):
             chord = self.localchords.get(cname) or self.knownchords.get(cname)
             if not chord:
                 continue
@@ -55,7 +55,7 @@ class PdfSongsRenderer(SongsRenderer):
             if xpos < self.canvas.get_left():
                 xpos = self.canvas.get_right() - boxw + 10
                 ypos += 55
-        self.usedchords = set()
+        self.usedchords = OrderedDict()
         self.canvas.restoreState()
 
     def draw_chord_box(self, xpos, ypos, cname, chord):

@@ -5,6 +5,7 @@ This file is part of chordlab.
 """
 
 import re
+from collections import OrderedDict
 
 import logging
 logger = logging.getLogger("chordlib.render")
@@ -15,6 +16,7 @@ class SongsRenderer(object):
         self.filename = None
         self.knownchords = {}
         self.localchords = {}
+        self.usedchords = OrderedDict()
 
     def new_song(self, filename):
         self.filename = filename
@@ -37,7 +39,7 @@ class SongsRenderer(object):
         p = re.compile('\(.*\)')
         chord = p.sub('', chord)
         if not (chord in ['N.C.', '%', '-', ''] or chord in self.usedchords):
-            self.usedchords.add(chord)
+            self.usedchords[chord] = True
             if not (chord in self.knownchords or chord in self.localchords):
                 logger.warn("Unknown chord: %s", chord)
 
