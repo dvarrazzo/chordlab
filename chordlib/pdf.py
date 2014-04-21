@@ -173,7 +173,7 @@ class PdfSongsRenderer(SongsRenderer):
         self.new_song(self.filename)
 
     def handle_Define(self, token):
-        self.define_chord(token.arg)
+        self.define_chord(token.arg[0], token.arg[1:])
 
     def handle_NoGrid(self, token):
         self.skip_grid = True
