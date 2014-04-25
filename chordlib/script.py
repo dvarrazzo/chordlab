@@ -13,6 +13,7 @@ from .canvas import CanvasAdapter
 from .chopro import ChoProParser
 from .error import ChordLibError
 from .pdf import PdfSongsRenderer
+from .xpose import xpose
 
 import logging
 logger = logging.getLogger('chordlib.script')
@@ -63,7 +64,7 @@ def main():
         r.new_song(fn)
         try:
             for token in p.parse_file(fn):
-                r.handle_token(token)
+                r.handle_token(xpose(token, options.xpose))
         except p.ParseError, e:
             logger.error("error parsing file '%s': %s", fn, e)
             return 1
@@ -125,6 +126,8 @@ def make_option_parser():
                    help="output file to write [default: %default]", metavar="FILE")
     opt.add_option("--ukulele", action="store_true",
                    help="print ukulele chords instead of guitar")
+    opt.add_option("--xpose", metavar="N", type=int,
+                   help="transpose the song N semitones")
     opt.add_option("-p", "--pagesize", dest="pagesize", type="pagesize",
                    default="A4", metavar="SZ",
                    help="output page size, name or dimensions [default: %default]")
