@@ -252,7 +252,7 @@ class PdfSongsRenderer(SongsRenderer):
             for x in parts:
                 if ischord:
                     self.use_chord(x)
-                    self._set_font(to, sl)
+                    to.setFont(sc.font, sl.font_size)
                     to.setFillColor(sc.color)
                 else:
                     self._set_font(to, sl)
