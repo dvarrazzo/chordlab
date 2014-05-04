@@ -104,6 +104,29 @@ class Style(object):
     def scale(self):
         return self._parse_percent('scale')
 
+    @property
+    def duplex(self):
+        return self._parse_bool('duplex')
+
+    @property
+    def margin_top(self):
+        return self._parse_float('margin-top')
+
+    @property
+    def margin_bottom(self):
+        return self._parse_float('margin-bottom')
+
+    @property
+    def margin_left(self):
+        return self._parse_float('margin-left')
+
+    @property
+    def margin_right(self):
+        return self._parse_float('margin-right')
+
+    @property
+    def margin_gutter(self):
+        return self._parse_float('margin-gutter')
 
     def _parse(self, opt):
         sect = self.item
@@ -126,7 +149,16 @@ class Style(object):
             return int(val)
         except ValueError:
             raise ChordLibError(
-                "bad value for '%s' in section '%s': %s"
+                "bad integer value for '%s' in section '%s': %s"
+                    % (opt, self.item, val))
+
+    def _parse_float(self, opt):
+        val = self._parse(opt)
+        try:
+            return float(val)
+        except ValueError:
+            raise ChordLibError(
+                "bad float value for '%s' in section '%s': %s"
                     % (opt, self.item, val))
 
     def _parse_color(self, opt):
@@ -171,4 +203,15 @@ class Style(object):
         except ValueError:
             raise ChordLibError(
                 "bad percent value for '%s' in section '%s': %s"
+                    % (opt, self.item, val))
+
+    def _parse_bool(self, opt):
+        val = self._parse(opt)
+        if val.lower() in ("1", "yes", "true", "on"):
+            return True
+        elif val.lower() in ("0", "no", "false", "off"):
+            return False
+        else:
+            raise ChordLibError(
+                "bad boolean value for '%s' in section '%s': %s"
                     % (opt, self.item, val))

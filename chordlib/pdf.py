@@ -22,18 +22,20 @@ class PdfSongsRenderer(SongsRenderer):
         self.skip_grid = False
         self.socpos = [0,0]
         self.colstart = 0
+        self.pageno = 0
 
     def new_song(self, filename):
         super(PdfSongsRenderer, self).new_song(filename)
-        self.draw_chord_boxes()
-        self.xpos, self.ypos = self.canvas.newPage(filename)
+        if self.pageno:
+            self.draw_chord_boxes()
+        self.xpos, self.ypos = self.newPage(filename)
         self.colw = self.canvas.get_right() # Any large number, really
 
     def column_break(self):
         self.ypos = self.colstart
         self.xpos += self.colw
         if (self.xpos + 1 > self.canvas.get_right()):
-            self.xpos, self.ypos = self.canvas.newPage(self.filename)
+            self.xpos, self.ypos = self.newPage(self.filename)
 
     def draw_chord_boxes(self):
         if self.skip_grid:
@@ -167,7 +169,7 @@ class PdfSongsRenderer(SongsRenderer):
         self.column_break()
 
     def handle_NewPage(self, token):
-        self.xpos,self.ypos = self.canvas.newPage(self.filename)
+        self.xpos,self.ypos = self.newPage(self.filename)
 
     def handle_NewSong(self, token):
         self.new_song(self.filename)
@@ -259,3 +261,40 @@ class PdfSongsRenderer(SongsRenderer):
                 ischord = not ischord
 
         self.canvas.drawText(to)
+
+    def newPage(self, filename):
+        canvas = self.canvas
+
+        if self.pageno > 0: canvas.showPage()
+        self.pageno += 1
+
+        ss = self.style['songsheet']
+        canvas.top = canvas.pagesize[1] - ss.margin_top
+        canvas.bottom = ss.margin_bottom
+
+        if ss.duplex and (self.pageno % 2 == 1):
+            canvas.left = ss.margin_left + ss.margin_gutter
+            canvas.right = canvas.pagesize[0] \
+                    - (ss.margin_right - ss.margin_gutter)
+            canvas.setFont('Times-Roman', 9)
+            canvas.drawRightString(canvas.right, canvas.bottom - 9,
+                str(self.pageno))
+        else:
+            canvas.left = ss.margin_left - ss.margin_gutter
+            canvas.right = canvas.pagesize[0] \
+                - (ss.margin_right + ss.margin_gutter)
+            canvas.setFont('Times-Roman', 9)
+            canvas.drawString(canvas.left, canvas.bottom - 9, str(self.pageno))
+        canvas.line(canvas.left, canvas.top,
+            canvas.right, canvas.top)
+        canvas.line(canvas.left, canvas.bottom,
+            canvas.right, canvas.bottom)
+        if canvas.showfilenames:
+            canvas.setFont('Helvetica', 8)
+            if ss.duplex and (self.pageno % 2 == 1):
+                canvas.drawString(canvas.left, canvas.bottom - 9, filename)
+            else:
+                canvas.drawRightString(canvas.right, canvas.bottom - 9, filename)
+
+        return (canvas.left, canvas.top)
+

@@ -13,7 +13,7 @@ class CanvasAdapter(canvas.Canvas):
     "My convenience adapter for the reportlab canvas."
 
     def __init__(self, filename, pagesize=A4, margin=50, showfilenames=False,
-                 duplex=True, title=None, author=None):
+                 title=None, author=None):
         canvas.Canvas.__init__(self, filename, pagesize=pagesize)
 
         self.setTitle(title or 'Songbook')
@@ -27,12 +27,6 @@ class CanvasAdapter(canvas.Canvas):
         self.pagesize = pagesize
         self.margin = margin
         self.showfilenames = showfilenames
-        self.duplex = duplex
-        self.pageno = 0
-        self.top = self.pagesize[1] - 0.4*self.margin
-        self.bottom = 0.62*self.margin
-        self.left = 0.5 * self.margin
-        self.right = self.pagesize[0] - 1.5 * self.margin
 
     def _guess_author(self):
         try:
@@ -47,30 +41,6 @@ class CanvasAdapter(canvas.Canvas):
         except:
             print "WARNING: Could not determine author name"
             return None
-
-    def newPage(self, filename):
-        if self.pageno > 0: self.showPage()
-        self.pageno += 1
-        if self.duplex and (self.pageno % 2 == 1):
-            self.left = 1.5 * self.margin
-            self.right = self.pagesize[0] - 0.5 * self.margin
-            self.setFont('Times-Roman', 9)
-            self.drawRightString(self.right, self.bottom - 9, str(self.pageno))
-        else:
-            self.left = 0.5 * self.margin
-            self.right = self.pagesize[0] - 1.5 * self.margin
-            self.setFont('Times-Roman', 9)
-            self.drawString(self.left, self.bottom - 9, str(self.pageno))
-        self.line(self.left, self.top, self.right, self.top)
-        self.line(self.left, self.bottom, self.right, self.bottom)
-        if self.showfilenames:
-            self.setFont('Helvetica', 8)
-            if self.duplex and (self.pageno % 2 == 1):
-                self.drawString(self.left, self.bottom - 9, filename)
-            else:
-                self.drawRightString(self.right, self.bottom - 9, filename)
-
-        return (self.left, self.top)
 
     def get_left(self):
         "Get left start of drawable area"
