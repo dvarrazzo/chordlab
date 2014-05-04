@@ -129,14 +129,14 @@ class PdfSongsRenderer(SongsRenderer):
 
     def _draw_title(self, style_name, text):
         style = self.style[style_name]
-        self.canvas.setFont(style.font, style.font_size)
+        self._set_font(self.canvas, style)
         self.canvas.setFillColor(style.color)
         self.ypos -= style.line_height
         self.canvas.draw_aligned_string(style.align, self.ypos, text)
 
     def handle_Comment(self, token):
         style = self.style['comment']
-        self.canvas.setFont(style.font, style.font_size)
+        self._set_font(self.canvas, style)
         self.canvas.setFillColor(style.color)
         self.ypos -= style.line_height
         self.canvas.drawString(self.xpos, self.ypos, token.arg)
@@ -153,7 +153,7 @@ class PdfSongsRenderer(SongsRenderer):
 
     def handle_StartOfTab(self, token):
         style = self.style['tab']
-        self.canvas.setFont(style.font, style.font_size)
+        self._set_font(self.canvas, style)
         self.tabmode = True
 
     def handle_EndOfTab(self, token):
@@ -186,7 +186,7 @@ class PdfSongsRenderer(SongsRenderer):
 
     def handle_TabLine(self, token):
         style = self.style['tab']
-        self.canvas.setFont(style.font, style.font_size)
+        self._set_font(self.canvas, style)
         self.canvas.setFillColor(style.color)
         h = style.line_height
         if self.ypos < self.canvas.get_bottom() + (h * 1.33):
@@ -235,11 +235,11 @@ class PdfSongsRenderer(SongsRenderer):
                     while csp[0] < okpos:
                         to.textOut(cfill)
                         csp = to.getCursor()
-                    to.setFont(sc.font, sc.font_size)
+                    self._set_font(to, sc)
                     to.setRise(sc.rise)
                     to.setFillColor(sc.color)
                 else:
-                    to.setFont(sl.font, sl.font_size)
+                    self._set_font(to, sl)
                     to.setRise(0)
                     to.setFillColor(sl.color)
                 to.textOut(x)
@@ -252,15 +252,18 @@ class PdfSongsRenderer(SongsRenderer):
             for x in parts:
                 if ischord:
                     self.use_chord(x)
-                    to.setFont(sc.font, sl.font_size)
+                    self._set_font(to, sl)
                     to.setFillColor(sc.color)
                 else:
-                    to.setFont(sl.font, sl.font_size)
+                    self._set_font(to, sl)
                     to.setFillColor(sl.color)
                 to.textOut(x)
                 ischord = not ischord
 
         self.canvas.drawText(to)
+
+    def _set_font(self, obj, style):
+        obj.setFont(style.font, style.font_size)
 
     def newPage(self, filename):
         canvas = self.canvas
@@ -269,6 +272,8 @@ class PdfSongsRenderer(SongsRenderer):
         self.pageno += 1
 
         ss = self.style['songsheet']
+        sp = self.style['page-number']
+
         canvas.top = canvas.pagesize[1] - ss.margin_top
         canvas.bottom = ss.margin_bottom
 
@@ -276,19 +281,26 @@ class PdfSongsRenderer(SongsRenderer):
             canvas.left = ss.margin_left + ss.margin_gutter
             canvas.right = canvas.pagesize[0] \
                     - (ss.margin_right - ss.margin_gutter)
-            canvas.setFont('Times-Roman', 9)
-            canvas.drawRightString(canvas.right, canvas.bottom - 9,
-                str(self.pageno))
+
+            if sp.display:
+                self._set_font(self.canvas, sp)
+                canvas.drawRightString(canvas.right, canvas.bottom - 9,
+                    str(self.pageno))
         else:
             canvas.left = ss.margin_left - ss.margin_gutter
             canvas.right = canvas.pagesize[0] \
                 - (ss.margin_right + ss.margin_gutter)
-            canvas.setFont('Times-Roman', 9)
-            canvas.drawString(canvas.left, canvas.bottom - 9, str(self.pageno))
+
+            if sp.display:
+                self._set_font(self.canvas, sp)
+                canvas.drawString(canvas.left, canvas.bottom - 9,
+                    str(self.pageno))
+
         canvas.line(canvas.left, canvas.top,
             canvas.right, canvas.top)
         canvas.line(canvas.left, canvas.bottom,
             canvas.right, canvas.bottom)
+
         if canvas.showfilenames:
             canvas.setFont('Helvetica', 8)
             if ss.duplex and (self.pageno % 2 == 1):

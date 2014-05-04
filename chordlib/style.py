@@ -53,6 +53,10 @@ class Style(object):
         self.item = item
 
     @property
+    def display(self):
+        return self._parse_bool('display')
+
+    @property
     def ttfont(self):
         return self._parse('font')
 
