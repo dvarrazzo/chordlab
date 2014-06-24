@@ -20,6 +20,7 @@ class PdfSongsRenderer(SongsRenderer):
         self.xpos = self.ypos = self.colw = None
         self.tabmode = False
         self.skip_grid = False
+        self.in_chorus = False
         self.socpos = [0,0]
         self.colstart = 0
         self.pageno = 0
@@ -32,10 +33,15 @@ class PdfSongsRenderer(SongsRenderer):
         self.colw = self.canvas.get_right() # Any large number, really
 
     def column_break(self):
+        in_chorus = self.in_chorus
+        if in_chorus:
+            self.handle_EndOfChorus(None)
         self.ypos = self.colstart
         self.xpos += self.colw
         if (self.xpos + 1 > self.canvas.get_right()):
             self.xpos, self.ypos = self.newPage(self.filename)
+        if in_chorus:
+            self.handle_StartOfChorus(None)
 
     def draw_chord_boxes(self):
         if self.skip_grid:
@@ -142,6 +148,7 @@ class PdfSongsRenderer(SongsRenderer):
         self.canvas.drawString(self.xpos, self.ypos, token.arg)
 
     def handle_StartOfChorus(self, token):
+        self.in_chorus = True
         self.socpos = [self.xpos-5, self.ypos]
         self.xpos += self.style['chorus'].indent
 
@@ -150,6 +157,7 @@ class PdfSongsRenderer(SongsRenderer):
         # TODO: box etc.
         self.canvas.line(self.socpos[0], self.socpos[1],
                          self.xpos-5, self.ypos-5)
+        self.in_chorus = False
 
     def handle_StartOfTab(self, token):
         style = self.style['tab']
