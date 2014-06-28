@@ -2,4 +2,5 @@ env
 *~
 
 # Typical output
-chords.pdf
+*.pdf
+*.pyc
