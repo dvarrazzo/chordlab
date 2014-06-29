@@ -3,6 +3,8 @@ Rendering of songs in pdf
 
 This file is part of chordlab.
 """
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
 from collections import OrderedDict
 from .render import SongsRenderer
@@ -86,11 +88,14 @@ class PdfSongsRenderer(SongsRenderer):
             [ypos + dy*y for y in range(-1, 6)])
         self.canvas.restoreState()
 
-        self.canvas.setFont("Helvetica-Oblique", 10)
+        style = self.style['chordbox']
+        self.canvas.setFillColor(style.color)
+        self._set_font(self.canvas, style)
+        self.canvas.setFont(style.ttfont, 10)
         self.canvas.drawCentredString(
             xpos + dx * 0.5 * (nstrings - 1), ypos + 5.1 * dy, cname)
 
-        self.canvas.setFont("Helvetica", 7)
+        self.canvas.setFont(style.ttfont, 7)
         if chord[0] > 1: # bare
             self.canvas.drawRightString(
                 xpos - 2.0 * dx / 5, ypos + 3 * dy + 1, str(chord[0]))
@@ -260,7 +265,7 @@ class PdfSongsRenderer(SongsRenderer):
             for x in parts:
                 if ischord:
                     self.use_chord(x)
-                    to.setFont(sc.font, sl.font_size)
+                    self._set_font(to, sc)
                     to.setFillColor(sc.color)
                 else:
                     self._set_font(to, sl)
@@ -271,7 +276,15 @@ class PdfSongsRenderer(SongsRenderer):
         self.canvas.drawText(to)
 
     def _set_font(self, obj, style):
-        obj.setFont(style.font, style.font_size)
+        if style.font_path:
+            fontnames = [x.lower() for x in
+                    self.canvas.getAvailableFonts()]
+            if style.ttfont.lower() not in fontnames:
+                pdfmetrics.registerFont(TTFont(style.ttfont,
+                    style.font_path))
+            obj.setFont(style.ttfont, style.font_size)
+        else:
+            obj.setFont(style.font, style.font_size)
 
     def newPage(self, filename):
         canvas = self.canvas

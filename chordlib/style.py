@@ -76,6 +76,11 @@ class Style(object):
         return tt2ps(font, bold, italic)
 
     @property
+    def font_path(self):
+        return self._parse('font-path')
+
+
+    @property
     def font_size(self):
         return self._parse_int('font-size')
 
