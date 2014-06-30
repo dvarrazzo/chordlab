@@ -77,7 +77,10 @@ class Style(object):
 
     @property
     def font_path(self):
-        return self._parse('font-path')
+        try:
+            return self._parse('font-path')
+        except ChordLibError:
+            return None
 
 
     @property
