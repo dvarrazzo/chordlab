@@ -1,5 +1,6 @@
 env
 *~
+/chordlab.egg-info
 
 # Typical output
 *.pdf
