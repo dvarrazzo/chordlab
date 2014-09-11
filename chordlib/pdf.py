@@ -28,9 +28,9 @@ class PdfSongsRenderer(SongsRenderer):
         self.pageno = 0
 
     def new_song(self, filename):
-        super(PdfSongsRenderer, self).new_song(filename)
         if self.pageno:
             self.draw_chord_boxes()
+        super(PdfSongsRenderer, self).new_song(filename)
         self.xpos, self.ypos = self.newPage(filename)
         self.colw = self.canvas.get_right() # Any large number, really
 
