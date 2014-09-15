@@ -36,8 +36,8 @@ class SongsRenderer(object):
             logger.warn("Bad chorddef " + name + ": " + str(args))
 
     def use_chord(self, chord):
-        p = re.compile('\s*\(.*\)')
-        chord = p.sub('', chord)
+        chord = re.sub('\s*\(.*\)', '', chord)      # strip (parens)
+        chord = re.sub('(\s*/\s*)*$', '', chord)    # strip trailing / / /
         if not (chord in ['N.C.', '%', '-', ''] or chord in self.usedchords):
             self.usedchords[chord] = True
             if not (chord in self.knownchords or chord in self.localchords):
