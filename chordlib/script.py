@@ -59,7 +59,7 @@ def main():
 
     r.knownchords = knownchords
 
-    p = ChoProParser(default_encoding='latin1') # bad choice
+    p = ChoProParser(default_encoding='utf8')
     for fn in sourcefiles:
         r.new_song(fn)
         try:
